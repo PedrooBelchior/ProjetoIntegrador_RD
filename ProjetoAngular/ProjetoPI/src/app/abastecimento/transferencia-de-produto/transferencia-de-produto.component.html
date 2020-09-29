@@ -1,0 +1,173 @@
+<div class='row'>
+  <div class='col-md-3'>
+    <!-- SideBar -->
+    <app-sidebar></app-sidebar>
+  </div>
+  <div class='col-md-9'>
+    <div class="container">
+      <br>
+      <div class="container">
+        <h2>Transferência de Produto</h2>
+      </div>
+      <br>
+      <div class="container">
+        <div class='row marginTopMain semMarginRightMain'>
+          <div class='container'>
+            <div class='col-md-12'>
+              <form class="needs-validation" #it="ngForm" novalidate>
+                <!-- Inicio da primeira linha-->
+                <div class="form-row">
+                  <div class="form-group col-md-4">
+                    <label for="inputNomeproduto4">Operação</label>
+                    <input id="cdOperacao" name="cdOperacao" class="form-control" placeholder="TRANSFERÊNCIA" disabled>
+                  </div>
+                  <div class="form-group col-md-4">
+                      <label for="inputNomeproduto4">Centro de Distribuição</label>
+                      <select name="idFilial" [disabled]="validacaoCDProduto() == true" (change)="listarTodosProdutos()" ngModel #idFilial="ngModel" class="form-control"
+                        [(ngModel)]='request.idFilial' id="idFilial" required>
+                        <option value="5">CD BUTANTÃ</option>
+                        <option value="6">CD EMBU</option>
+                        <option value="7">CD GUARULHOS</option>
+                      </select>
+                  </div>
+                  <div class="form-group col-md-4">
+                    <label for="inputdescricao">Filial Destino</label>
+                    <select name="idFilialDestino" ngModel #idFilialDestino="ngModel" class="form-control"
+                        [(ngModel)]='request.idFilialDestino' id="idFilialDestino" required>
+                        <option *ngFor='let filiais of responseFiliais' value="{{filiais.cdFilial}}">{{ filiais.nmFilial }}</option>
+                    </select>
+                    <div class='row' *ngIf="loading">
+                        <div class="spinner-grow text-success text-center" role="status">
+                          <span class="sr-only">Loading...</span>
+                        </div>
+                      </div>
+                    <div class="invalid-tooltip">
+                      Selecione uma filial de destino, por favor.
+                    </div>
+
+                  </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-4">
+                        <label for="inputforn">Valor Total</label>
+                        <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">R$</span>
+                          </div>
+                        <input currencyMask type="text" name="vlDocumentoFiscal" required #vlDocumentoFiscal="ngModel" 
+                        class="form-control" placeholder=" 000.00"
+                        [(ngModel)]='request.vlDocumentoFiscal'
+                        [options]="{ prefix: '', thousands: ',', decimal: '.' }">
+                    </div>
+                    </div>
+
+                    <div class="form-group col-md-4">
+                        <label for="inputLote">Data Emissão</label>
+                        <input id="dtEmissao" name="dtEmissao" required #dtEmissao="ngModel" class="data form-control" placeholder="____/___/___"
+                        [(ngModel)]='request.emissao'>
+                        <div *ngIf="validarDataEmissao() == false" class="invalid-tooltip d-block">
+                          <div [hidden]="validarDataEmissao() == true">Insira uma data menor ou igual a atual.</div>
+                      </div>
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="inputCodProd">Data Entrada</label>
+                        <input id="dtEntrada" name="dtEntrada" required #dtEntrada="ngModel" class="data form-control" placeholder="____/___/___"
+                        [(ngModel)]='request.entrada'>
+                        <div *ngIf="validarData() == false" class="invalid-tooltip d-block">
+                            <div [hidden]="validarData() == true">Insira uma data maior que a data de emissão</div>
+                        </div>
+                    </div>
+                </div>
+              </form>
+                <!-- Itens do documento fiscal -->
+                <!-- <form class="needs-validation" novalidate> -->
+                  <form class="needs-validation" #itItens="ngForm" novalidate>
+                    <br>
+                    <h3>Itens transferência</h3>
+                    <br>
+                    <div class="form-row">
+                        <div class="form-group col-md-2">
+                            <label for="inputdescricao">Produtos</label>
+                            <div class="invalid-tooltip">
+                                  Selecione um produto, por favor.
+                            </div> 
+                            <select [(ngModel)]='item.cdProduto' class="form-control" id="cdProduto" name="cdProduto" required>
+                                <option *ngFor='let produtos of responseEstoque'  ngValue="{{produtos.cdProduto}}">{{produtos.qt_estoque}} - {{ produtos.nmProduto }}</option>
+                            </select>
+                              <div class='row' *ngIf="loading">
+                                <div class="spinner-grow text-success text-center" role="status">
+                                  <span class="sr-only">Loading...</span>
+                                </div>
+                              </div>
+                        </div>
+                        <div class="form-group col-md-2">
+                            <label for="inputdescricao">Quantidade Itens</label>
+                            <input type="number" name="qtItem" required #qtItem="ngModel" pattern="[0-9]+$" class="form-control" placeholder="1" [(ngModel)]='item.qtItem' min="1">
+                            <div class="invalid-tooltip">
+                                  Digite uma quantidade de itens, por favor.
+                              </div>
+                        </div>
+                        <!-- botão adicionar -->
+                        <div style="margin-top: 8px;" class="form-group">
+                          <br>
+                          
+                          <button type="button" class="btn btn-outline-success my-2 my-sm-0" [disabled]="itItens.form.invalid" (click)="itens()" >Adicionar item</button>
+                        </div>
+                        <div class="col-md-2"></div>
+
+                        <div style="margin-top: 8px;" class="form-group">
+                          <br>
+                          <button type="submit" class="btn btn-default botaoConfirmar" [disabled]="it.form.invalid || validarData() == false || validarDataEmissao() == false" (click)="register()">Confirmar</button>
+                          <a routerLink='/listaEntradaProdutos'><button type="button" class="btn btn-default botaoCancelar">Cancelar</button></a>
+                        </div>
+                    </div>
+                </form>
+
+                <table class="table table-hover">
+                    <thead class="thead-default tituloTabela">
+                      <tr>
+                        <th scope="col">Código Produto</th>
+                        <th scope="col">Nome Produto</th>
+                        <th scope="col">Quantidade de Itens</th>
+                        <th scope="col">Remover</th>
+                      </tr>
+                    </thead>
+              
+                    <tbody>
+                      <tr *ngFor='let itens of request.itens; let i = index;'>
+                        <td >{{itens.cdProduto}}</td>
+                        <td >{{itens.nmProduto}}</td>
+                        <td >{{itens.qtItem}}</td>
+                        <td><abbr title="Excluir">
+                          <button class="btn btn-secondary" (click)="selecionarItem(i)"
+                            data-dismiss="modal" data-toggle="modal" data-target="#removerProduto"><i class="fa fa-trash"></i>
+                            </button>
+                        </abbr>
+                      </td>
+                      </tr>
+                    </tbody>
+                  </table>
+              
+              <!-- FIM DA LISTA -->
+
+            </div>
+            <!-- Modal Excluir-->
+            <div class="modal fade" id="removerProduto" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    Deseja realmente remover o item selecionado ?
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" data-dismiss="modal" class="btn btn-danger" (click)="cancelarProduto()">Remover</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
