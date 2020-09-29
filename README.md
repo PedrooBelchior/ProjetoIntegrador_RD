@@ -1,7 +1,7 @@
 Projeto em andamento por:
 
-Henrique Ferreira,
 Pedro Araújo,
+Henrique Ferreira,
 Vitor Rodrigues,
 Paulo Oliveira,
 Nathan Ferreira.
